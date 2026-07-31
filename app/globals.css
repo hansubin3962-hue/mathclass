@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+  --background: #0b0f19;
+  --foreground: #f1f5f9;
 }
 
 body {
@@ -14,20 +14,22 @@ body {
   overflow-x: hidden;
 }
 
-/* Subtle background glow effects */
-.bg-radial-gradient {
-  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
-}
-
-.card-glass {
-  background: rgba(30, 41, 59, 0.7);
+/* Glassmorphism & Math Classroom Accents */
+.math-card {
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(51, 65, 85, 0.6);
 }
 
-.card-glass:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
+.math-card:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.25);
+}
+
+.math-badge {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  color: #a5b4fc;
 }
 
 /* Custom Scrollbar */
@@ -35,12 +37,12 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #070a12;
 }
 ::-webkit-scrollbar-thumb {
-  background: #4f46e5;
+  background: #3b82f6;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6366f1;
+  background: #60a5fa;
 }
