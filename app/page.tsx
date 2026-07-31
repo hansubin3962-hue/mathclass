@@ -115,14 +115,21 @@ export default function Home() {
   };
 
   // ==========================================
-  // AIRPLANE GAME STATE (중1 정수와 유리수 + 먹구름 장애물 회피 비행)
+  // REAL-TIME AIRPLANE ARCADE GAME STATE
   // ==========================================
   const [gameState, setGameState] = useState<"READY" | "PLAYING" | "GAMEOVER">("READY");
-  const [planeLane, setPlaneLane] = useState<number>(1); // 0: TOP, 1: MID, 2: BOTTOM
+  const [planeY, setPlaneY] = useState<number>(45); // Y position percentage (15% to 75%)
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
   const [lives, setLives] = useState<number>(3);
   const [feedback, setFeedback] = useState<{ text: string; type: "correct" | "wrong" | "" }>({ text: "", type: "" });
+
+  // Key press flags for continuous smooth plane movement
+  const [upPressed, setUpPressed] = useState<boolean>(false);
+  const [downPressed, setDownPressed] = useState<boolean>(false);
+
+  // Incoming wave X position (100% to 15%)
+  const [waveX, setWaveX] = useState<number>(100);
 
   const [laneSetup, setLaneSetup] = useState<LaneItem[]>([
     { type: "NUM_A", number: { display: "+4", value: 4 } },
@@ -156,64 +163,79 @@ export default function Home() {
       numB = generateRationalNumber();
     }
 
-    // Shuffle 3 lanes (One OBSTACLE, One NUM_A, One NUM_B)
     const items: LaneItem[] = [
       { type: "NUM_A", number: numA },
       { type: "NUM_B", number: numB },
       { type: "OBSTACLE" }
     ];
 
-    // Fisher-Yates shuffle
     for (let i = items.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [items[i], items[j]] = [items[j], items[i]];
     }
 
     setLaneSetup(items);
+    setWaveX(100);
   };
 
   const startGame = () => {
     setScore(0);
     setCombo(0);
     setLives(3);
-    setPlaneLane(1); // Start in middle lane
+    setPlaneY(45);
     setFeedback({ text: "", type: "" });
     setGameState("PLAYING");
     nextQuestion();
   };
 
-  // Move Airplane up/down freely
-  const movePlaneUp = () => {
-    setPlaneLane(prev => Math.max(0, prev - 1));
-  };
-
-  const movePlaneDown = () => {
-    setPlaneLane(prev => Math.min(2, prev + 1));
-  };
-
-  // Execute Flight Collision / Gate Check for current lane or clicked target lane
-  const handleCheckFlight = (targetLaneIdx?: number) => {
+  // Continuous Flight Loop for smooth Y movement and incoming wave scrolling
+  useEffect(() => {
     if (gameState !== "PLAYING") return;
 
-    const currentLane = targetLaneIdx !== undefined ? targetLaneIdx : planeLane;
-    if (targetLaneIdx !== undefined) {
-      setPlaneLane(targetLaneIdx);
-    }
+    const interval = setInterval(() => {
+      // 1. Move plane Y position based on held keys
+      setPlaneY(prevY => {
+        let newY = prevY;
+        if (upPressed) newY = Math.max(12, prevY - 2.5);
+        if (downPressed) newY = Math.min(78, prevY + 2.5);
+        return newY;
+      });
+
+      // 2. Scroll incoming wave leftwards
+      setWaveX(prevX => {
+        const newX = prevX - 1.2;
+        if (newX <= 18) {
+          // Trigger Collision evaluation at the plane's X position!
+          return 18;
+        }
+        return newX;
+      });
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [gameState, upPressed, downPressed]);
+
+  // Evaluate Collision when wave reaches plane position (waveX <= 18)
+  useEffect(() => {
+    if (gameState !== "PLAYING" || waveX > 18) return;
+
+    // Determine current lane based on planeY percentage
+    let currentLane = 1;
+    if (planeY < 32) currentLane = 0;
+    else if (planeY > 60) currentLane = 2;
+    else currentLane = 1;
 
     const item = laneSetup[currentLane];
-
-    // Find greatest number and smallest number in current round
     const numItems = laneSetup.filter(l => l.type !== "OBSTACLE" && l.number);
     const greaterItem = numItems.reduce((max, cur) => (cur.number!.value > max.number!.value ? cur : max), numItems[0]);
     const smallerItem = numItems.find(l => l !== greaterItem)!;
 
     if (item.type === "OBSTACLE") {
-      // Hit Obstacle!
       const newLives = lives - 1;
       setLives(newLives);
       setCombo(0);
       setFeedback({ 
-        text: `💥 ⚡ 먹구름 장애물과 충돌했습니다! (더 큰 수: ${greaterItem.number!.display}) 생명 -1`, 
+        text: `💥 ⚡ 먹구름 장애물 충돌! (더 큰 수: ${greaterItem.number!.display}) 생명 -1`, 
         type: "wrong" 
       });
 
@@ -226,12 +248,11 @@ export default function Home() {
         }, 1200);
       }
     } else if (item.number && item.number.value === greaterItem.number!.value) {
-      // Hit Greater Number! Correct!
       const addedScore = 100 + combo * 20;
       setScore(prev => prev + addedScore);
       setCombo(prev => prev + 1);
       setFeedback({ 
-        text: `🎉 정답! 더 큰 수(${item.number.display} > ${smallerItem.number!.display}) 경로 통과 성공! +${addedScore}점`, 
+        text: `🎉 정답! 더 큰 수(${item.number.display} > ${smallerItem.number!.display}) 통과 성공! +${addedScore}점`, 
         type: "correct" 
       });
       setTimeout(() => {
@@ -239,7 +260,6 @@ export default function Home() {
         nextQuestion();
       }, 1000);
     } else {
-      // Hit Smaller Number! Wrong!
       const newLives = lives - 1;
       setLives(newLives);
       setCombo(0);
@@ -257,26 +277,36 @@ export default function Home() {
         }, 1200);
       }
     }
-  };
+  }, [waveX]);
 
-  // Keyboard Control listener (Up / Down Arrow for movement, Space / Enter to fly)
+  // Keyboard Event Listeners for smooth holding control
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState !== "PLAYING") return;
-      if (e.key === "ArrowUp") {
+      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
         e.preventDefault();
-        movePlaneUp();
-      } else if (e.key === "ArrowDown") {
+        setUpPressed(true);
+      } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
         e.preventDefault();
-        movePlaneDown();
-      } else if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        handleCheckFlight();
+        setDownPressed(true);
       }
     };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+        setUpPressed(false);
+      } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+        setDownPressed(false);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [gameState, planeLane, laneSetup, lives, combo]);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [gameState]);
 
   // Worksheets Data
   const resources = [
@@ -528,7 +558,7 @@ export default function Home() {
               </h4>
               <p className="text-slate-600 text-sm leading-relaxed">
                 공식만 외워서 푸는 지루한 수학에서 벗어나, 개념이 시각적으로 이해되고 스스로 문제 해결의 힌트를 
-                발견할 수 있도록 돕는 것이 저의 교육 철학입니다. AI 수학 챗봇과 장애물 비행기 교구로 수업을 풍성하게 만듭니다.
+                발견할 수 있도록 돕는 것이 저의 교육 철학입니다. AI 수학 챗봇과 비행기 교구 게임으로 수업을 풍성하게 만듭니다.
               </p>
             </div>
 
@@ -733,18 +763,19 @@ export default function Home() {
       </section>
 
 
-      {/* 5. 게임 (GAME) SECTION: 중1 수학 정수와 유리수 + 먹구름 회피 비행기 게임 */}
+      {/* 5. 게임 (GAME) SECTION: 중1 수학 정수와 유리수 + 실시간 움직이는 비행기 액션 게임 */}
       <section id="game" className="container mx-auto px-4 sm:px-6 max-w-4xl space-y-8">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center space-x-2 text-indigo-600 font-bold text-xs uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
             <Gamepad2 className="w-4 h-4 text-indigo-600" />
-            <span>중1 수학 1학기 • 정수와 유리수 대소 관계</span>
+            <span>중1 수학 1학기 • 실시간 2D 비행기 조종 게임</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-            ✈️ 먹구름 회피 & 정수·유리수 대소비교 비행기 게임
+            ✈️ 실시간 먹구름 회피 & 정수·유리수 대소비교 비행기 게임
           </h2>
           <p className="text-slate-600 text-sm max-w-xl mx-auto">
-            위/아래 조종 버튼이나 방향키(↑/↓)로 비행기를 자유롭게 움직여 <strong>🌩️ 먹구름 장애물을 회피하고 [더 큰 수]가 적힌 경로로 조종</strong>하세요!
+            방향키(↑/↓)나 화면 조종 버튼을 <strong>누르고 있으면 비행기가 실시간으로 위아래로 움직입니다!</strong> <br />
+            다가오는 먹구름 장애물을 회피하고 <strong>[더 큰 수]</strong>를 찾아 충돌/통과하세요!
           </p>
         </div>
 
@@ -782,10 +813,10 @@ export default function Home() {
                 <Plane className="w-10 h-10 animate-bounce" />
               </div>
               <div className="space-y-2 max-w-md mx-auto">
-                <h3 className="text-2xl font-black text-white">먹구름 회피 비행 준비 완료!</h3>
+                <h3 className="text-2xl font-black text-white">실시간 비행 조종 준비 완료!</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  3개 경로 중 하나에는 <strong>🌩️ 먹구름 장애물</strong>이 나타납니다. <br />
-                  장애물을 피해 비행기를 <strong>[더 큰 수]</strong>가 적힌 경로로 조종하세요!
+                  방향키(↑/↓)나 버튼을 누르고 있으면 비행기가 <strong>실시간으로 부드럽게 위아래로 고도 조절</strong>을 합니다. <br />
+                  오른쪽에서 날아오는 <strong>🌩️ 먹구름 장애물</strong>을 피해 <strong>[더 큰 수]</strong>를 조준하여 비행하세요!
                 </p>
               </div>
               <button
@@ -793,62 +824,51 @@ export default function Home() {
                 className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-base rounded-xl shadow-lg shadow-indigo-600/40 transition-all inline-flex items-center space-x-2"
               >
                 <Play className="w-5 h-5 fill-white" />
-                <span>비행 게임 시작하기</span>
+                <span>실시간 비행 게임 시작하기</span>
               </button>
             </div>
           )}
 
           {gameState === "PLAYING" && (
             <div className="space-y-6">
-              {/* Sky Flight 3-Lane Arena */}
-              <div className="relative bg-gradient-to-b from-sky-400 via-sky-300 to-indigo-400 rounded-2xl p-4 h-80 flex flex-col justify-between overflow-hidden shadow-inner border border-sky-300">
+              {/* REAL-TIME SKY FLIGHT CANVAS ARENA */}
+              <div className="relative bg-gradient-to-b from-sky-400 via-sky-300 to-indigo-400 rounded-2xl h-80 overflow-hidden shadow-inner border-2 border-sky-300">
                 
-                {/* Cloud Accents */}
-                <div className="absolute top-2 left-6 text-white/30 font-bold text-4xl select-none pointer-events-none">☁️</div>
-                <div className="absolute bottom-4 right-10 text-white/30 font-bold text-5xl select-none pointer-events-none">☁️</div>
+                {/* Background Moving Clouds */}
+                <div className="absolute top-4 left-10 text-white/30 font-bold text-4xl select-none pointer-events-none">☁️</div>
+                <div className="absolute bottom-6 right-20 text-white/30 font-bold text-5xl select-none pointer-events-none">☁️</div>
 
-                {/* 3 LANES RENDER */}
-                {laneSetup.map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    onClick={() => handleCheckFlight(idx)}
-                    className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all border ${
-                      planeLane === idx 
-                        ? "bg-indigo-950/80 border-amber-400 shadow-xl" 
-                        : "bg-slate-900/60 border-white/20 hover:bg-slate-900/80"
-                    }`}
-                  >
-                    {/* Lane Info & Plane Indicator */}
-                    <div className="flex items-center space-x-3">
-                      <span className="px-2.5 py-1 bg-white/90 text-slate-800 font-extrabold text-xs rounded-lg shadow-sm">
-                        {idx === 0 ? "1번 경로 [상단]" : idx === 1 ? "2번 경로 [중단]" : "3번 경로 [하단]"}
-                      </span>
+                {/* 1. REAL-TIME SMOOTHLY MOVING AIRPLANE */}
+                <div 
+                  className="absolute left-[12%] z-30 transition-all duration-75 flex items-center space-x-2 drop-shadow-md"
+                  style={{ top: `${planeY}%`, transform: 'translateY(-50%)' }}
+                >
+                  <div className="p-2.5 bg-amber-400 text-slate-950 rounded-2xl shadow-xl border-2 border-white flex items-center space-x-1.5 animate-pulse">
+                    <Plane className="w-6 h-6 fill-slate-950" />
+                    <span className="text-xs font-black">내 비행기 ✈️</span>
+                  </div>
+                </div>
 
-                      {planeLane === idx && (
-                        <div className="flex items-center space-x-1.5 bg-amber-400 text-slate-950 px-3 py-1 rounded-full shadow-lg font-black text-xs animate-bounce">
-                          <Plane className="w-4 h-4 fill-slate-950" />
-                          <span>내 비행기 위치 ✈️</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Target Item (Rational Number or Obstacle) */}
-                    <div>
+                {/* 2. INCOMING WAVE OBJECTS SCROLLING FROM RIGHT TO LEFT */}
+                <div 
+                  className="absolute top-0 bottom-0 z-20 flex flex-col justify-around py-3 transition-all duration-75"
+                  style={{ left: `${waveX}%`, width: '160px', transform: 'translateX(-50%)' }}
+                >
+                  {laneSetup.map((item, idx) => (
+                    <div key={idx} className="flex justify-end pr-2">
                       {item.type === "OBSTACLE" ? (
-                        <div className="px-4 py-2 bg-rose-600 text-white font-black text-sm rounded-xl border border-rose-400 shadow-md flex items-center space-x-1.5 animate-pulse">
+                        <div className="px-4 py-2 bg-rose-600 text-white font-black text-xs sm:text-sm rounded-2xl border-2 border-rose-300 shadow-xl flex items-center space-x-1.5 animate-bounce">
                           <CloudLightning className="w-5 h-5 text-yellow-300" />
-                          <span>🌩️ 먹구름 장애물!</span>
+                          <span>🌩️ 먹구름!</span>
                         </div>
                       ) : (
-                        <div className={`px-5 py-2 rounded-xl font-black text-xl font-mono shadow-md border ${
-                          planeLane === idx ? "bg-white text-indigo-700 border-amber-400" : "bg-slate-900 text-white border-white/30"
-                        }`}>
+                        <div className="px-5 py-2.5 bg-slate-900/95 text-white font-black text-xl font-mono rounded-2xl border-2 border-amber-300 shadow-xl">
                           {item.number?.display}
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
 
               </div>
 
@@ -863,35 +883,37 @@ export default function Home() {
                 </div>
               )}
 
-              {/* FREE FLIGHT CONTROLS */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* REAL-TIME CONTINUOUS FLIGHT CONTROLS */}
+              <div className="grid grid-cols-2 gap-4">
                 <button
-                  onClick={movePlaneUp}
-                  className="py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow border border-slate-600 flex items-center justify-center space-x-1 transition-all"
+                  onMouseDown={() => setUpPressed(true)}
+                  onMouseUp={() => setUpPressed(false)}
+                  onTouchStart={() => setUpPressed(true)}
+                  onTouchEnd={() => setUpPressed(false)}
+                  className={`py-4 font-black text-sm rounded-2xl shadow-md flex items-center justify-center space-x-2 transition-all ${
+                    upPressed ? "bg-indigo-700 text-amber-300 scale-95" : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                  }`}
                 >
-                  <ArrowUp className="w-4 h-4 text-amber-400" />
-                  <span>[⬆️ 위로 비행]</span>
+                  <ArrowUp className="w-5 h-5" />
+                  <span>[⬆️ 위로 실시간 비행 (누르고 있기)]</span>
                 </button>
 
                 <button
-                  onClick={() => handleCheckFlight()}
-                  className="py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-1.5 transition-all"
+                  onMouseDown={() => setDownPressed(true)}
+                  onMouseUp={() => setDownPressed(false)}
+                  onTouchStart={() => setDownPressed(true)}
+                  onTouchEnd={() => setDownPressed(false)}
+                  className={`py-4 font-black text-sm rounded-2xl shadow-md flex items-center justify-center space-x-2 transition-all ${
+                    downPressed ? "bg-indigo-700 text-amber-300 scale-95" : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                  }`}
                 >
-                  <Plane className="w-4 h-4 text-amber-300" />
-                  <span>[🚀 현재 경로로 비행!]</span>
-                </button>
-
-                <button
-                  onClick={movePlaneDown}
-                  className="py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl shadow border border-slate-600 flex items-center justify-center space-x-1 transition-all"
-                >
-                  <ArrowDown className="w-4 h-4 text-amber-400" />
-                  <span>[⬇️ 아래로 비행]</span>
+                  <ArrowDown className="w-5 h-5" />
+                  <span>[⬇️ 아래로 실시간 비행 (누르고 있기)]</span>
                 </button>
               </div>
 
-              <p className="text-[11px] text-center text-slate-400">
-                💡 팁: 키보드 방향키(↑/↓)로 비행기를 상/중/하 경로로 자유롭게 이동하고, 스페이스바나 엔터키를 눌러 비행 통과를 누를 수 있습니다!
+              <p className="text-[11px] text-center text-slate-500 font-semibold">
+                💡 팁: 키보드의 상/하(↑/↓) 방향키 또는 W/S 키를 <strong>꾹 누르고 있으면 비행기가 화면 위아래로 실시간으로 부드럽게 움직입니다!</strong>
               </p>
             </div>
           )}
