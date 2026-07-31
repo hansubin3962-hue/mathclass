@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Search, 
   Download, 
   Laptop, 
   FileText, 
-  Bookmark, 
   Sparkles, 
   RotateCcw, 
-  User, 
   Gamepad2, 
   Trophy, 
   Award, 
@@ -20,15 +18,23 @@ import {
   ArrowDown,
   Plane,
   Play,
-  CheckCircle2,
-  XCircle,
-  HelpCircle
+  Bot,
+  Send,
+  Loader2,
+  MessageSquare,
+  Lightbulb
 } from "lucide-react";
+
+// Chatbot Message Structure
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
 
 // Rational Number Item Structure
 interface RationalNumber {
-  display: string; // e.g. "-3.5", "+2/3", "-7"
-  value: number;   // numeric value for comparison
+  display: string;
+  value: number;
 }
 
 export default function Home() {
@@ -42,10 +48,69 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // ==========================================
+  // AI CHATBOT STATE
+  // ==========================================
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      role: "assistant",
+      content: "안녕! 나는 수빈쌤이야 😊 수학 문제를 풀다가 막히거나 원리가 궁금한 개념이 있다면 무엇이든 편하게 물어봐!"
+    }
+  ]);
+  const [chatInput, setChatInput] = useState<string>("");
+  const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatMessages, isChatLoading]);
+
+  const handleSendMessage = async (textToSend?: string) => {
+    const text = (textToSend || chatInput).trim();
+    if (!text || isChatLoading) return;
+
+    const newMessages: ChatMessage[] = [...chatMessages, { role: "user", content: text }];
+    setChatMessages(newMessages);
+    setChatInput("");
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages.map(msg => ({ role: msg.role, content: msg.content }))
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setChatMessages(prev => [
+          ...prev, 
+          { role: "assistant", content: `⚠️ ${data.error || "오류가 발생했어요. Vercel 환경변수에 OPENAI_API_KEY가 등록되어 있는지 확인해주세요."}` }
+        ]);
+      } else {
+        setChatMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
+      }
+    } catch (err: any) {
+      setChatMessages(prev => [
+        ...prev, 
+        { role: "assistant", content: "⚠️ 네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요." }
+      ]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  // ==========================================
   // AIRPLANE GAME STATE (중1 정수와 유리수 대소비교)
   // ==========================================
   const [gameState, setGameState] = useState<"READY" | "PLAYING" | "GAMEOVER">("READY");
-  const [planeLane, setPlaneLane] = useState<"TOP" | "BOTTOM">("TOP"); // 비행기 위치 (위 / 아래)
+  const [planeLane, setPlaneLane] = useState<"TOP" | "BOTTOM">("TOP");
   const [score, setScore] = useState<number>(0);
   const [combo, setCombo] = useState<number>(0);
   const [lives, setLives] = useState<number>(3);
@@ -54,19 +119,15 @@ export default function Home() {
   const [topNumber, setTopNumber] = useState<RationalNumber>({ display: "+3", value: 3 });
   const [bottomNumber, setBottomNumber] = useState<RationalNumber>({ display: "-5", value: -5 });
 
-  // Helper: Generate random Integer or Rational Number
   const generateRationalNumber = (): RationalNumber => {
     const type = Math.random();
     if (type < 0.4) {
-      // Integer (-15 to 15)
       const val = Math.floor(Math.random() * 30) - 15;
       return { display: val > 0 ? `+${val}` : `${val}`, value: val };
     } else if (type < 0.7) {
-      // Decimal (-9.9 to 9.9)
       const val = parseFloat((Math.random() * 20 - 10).toFixed(1));
       return { display: val > 0 ? `+${val}` : `${val}`, value: val };
     } else {
-      // Fraction (denominator 2, 3, 4, 5)
       const den = [2, 3, 4, 5][Math.floor(Math.random() * 4)];
       const num = Math.floor(Math.random() * 12) - 6;
       if (num === 0) return { display: "0", value: 0 };
@@ -76,7 +137,6 @@ export default function Home() {
     }
   };
 
-  // Generate new pair of numbers guaranteed not equal
   const nextQuestion = () => {
     let num1 = generateRationalNumber();
     let num2 = generateRationalNumber();
@@ -99,7 +159,6 @@ export default function Home() {
     nextQuestion();
   };
 
-  // Player action: Fly & Select Lane
   const handleFlyAndCheck = (chosenLane: "TOP" | "BOTTOM") => {
     if (gameState !== "PLAYING") return;
 
@@ -108,7 +167,6 @@ export default function Home() {
     const otherNum = chosenLane === "TOP" ? bottomNumber : topNumber;
 
     if (chosenNum.value > otherNum.value) {
-      // Correct! Chosen number is GREATER
       const addedScore = 100 + combo * 20;
       setScore(prev => prev + addedScore);
       setCombo(prev => prev + 1);
@@ -121,7 +179,6 @@ export default function Home() {
         nextQuestion();
       }, 1000);
     } else {
-      // Wrong!
       const newLives = lives - 1;
       setLives(newLives);
       setCombo(0);
@@ -141,7 +198,6 @@ export default function Home() {
     }
   };
 
-  // Keyboard Up / Down Arrow Control listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState !== "PLAYING") return;
@@ -156,7 +212,6 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameState, topNumber, bottomNumber, lives, combo]);
-
 
   // Worksheets Data
   const resources = [
@@ -237,7 +292,7 @@ export default function Home() {
         <div className="text-center space-y-5 max-w-3xl mx-auto">
           <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-1.5 text-xs text-indigo-700 font-bold shadow-sm">
             <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-            <span>2026학년도 수학 수업 활용 라이브러리</span>
+            <span>2026학년도 수학 수업 활용 라이브러리 & AI 챗봇</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
@@ -246,7 +301,7 @@ export default function Home() {
           </h1>
 
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            실시간 비행기 수학 게임부터 단원별 학습지, 디지털 교구까지 — <br className="hidden sm:inline" />
+            실시간 AI 수학 챗봇 질문 답변부터 비행기 수학 게임, 단원별 학습지까지 — <br className="hidden sm:inline" />
             선생님과 학생들이 수업 시간에 재미있게 활용할 수 있는 수학교실 뱅크입니다.
           </p>
 
@@ -404,7 +459,7 @@ export default function Home() {
               </h4>
               <p className="text-slate-600 text-sm leading-relaxed">
                 공식만 외워서 푸는 지루한 수학에서 벗어나, 개념이 시각적으로 이해되고 스스로 문제 해결의 힌트를 
-                발견할 수 있도록 돕는 것이 저의 교육 철학입니다. 디지털 비행기 게임과 탐구 교구로 수업을 풍성하게 만듭니다.
+                발견할 수 있도록 돕는 것이 저의 교육 철학입니다. AI 수학 챗봇과 탐구 교구로 수업을 풍성하게 만듭니다.
               </p>
             </div>
 
@@ -489,7 +544,127 @@ export default function Home() {
       </section>
 
 
-      {/* 4. 게임 (GAME) SECTION: 중1 수학 정수와 유리수 비행기 게임 */}
+      {/* 4. AI 수학 챗봇 (CHATBOT) SECTION */}
+      <section id="chatbot" className="container mx-auto px-4 sm:px-6 max-w-4xl space-y-6">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center space-x-2 text-indigo-600 font-bold text-xs uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+            <Bot className="w-4 h-4 text-indigo-600" />
+            <span>OpenAI Powered Math Assistant</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+            🤖 수빈쌤 AI 수학 Q&A 챗봇
+          </h2>
+          <p className="text-slate-600 text-sm max-w-xl mx-auto">
+            수학 문제 풀이 과정이나 원리가 궁금할 때 질문해보세요. 수빈쌤 AI가 다정하게 설명해드립니다.
+          </p>
+        </div>
+
+        <div className="card-light rounded-3xl overflow-hidden shadow-xl border border-indigo-100 flex flex-col h-[520px]">
+          {/* Chat Header */}
+          <div className="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-800">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
+                수빈
+              </div>
+              <div>
+                <h3 className="font-bold text-sm">수빈쌤 AI 튜터</h3>
+                <span className="text-[11px] text-emerald-400 flex items-center space-x-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>답변 준비 완료</span>
+                </span>
+              </div>
+            </div>
+            <span className="text-xs text-slate-400 font-mono">OpenAI gpt-4o-mini</span>
+          </div>
+
+          {/* Chat Messages Body */}
+          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50">
+            {chatMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex items-start space-x-2.5 ${
+                  msg.role === "user" ? "flex-row-reverse space-x-reverse" : ""
+                }`}
+              >
+                {msg.role === "assistant" && (
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+                    수빈
+                  </div>
+                )}
+
+                <div
+                  className={`max-w-[80%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${
+                    msg.role === "user"
+                      ? "bg-indigo-600 text-white rounded-tr-none font-medium"
+                      : "bg-white text-slate-800 border border-slate-200 rounded-tl-none"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {isChatLoading && (
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                  수빈
+                </div>
+                <div className="bg-white border border-slate-200 p-3.5 rounded-2xl text-xs text-slate-500 flex items-center space-x-2 shadow-sm">
+                  <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
+                  <span>수빈쌤이 친절한 답변을 작성하고 있습니다...</span>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Quick Prompts */}
+          <div className="p-2.5 bg-white border-t border-slate-200 flex items-center space-x-2 overflow-x-auto text-xs">
+            <span className="text-slate-400 font-bold flex items-center space-x-1 flex-shrink-0 pl-2">
+              <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
+              <span>추천 질문:</span>
+            </span>
+            {[
+              "이차방정식 근의 공식이 뭐야?",
+              "정수와 유리수 곱셈 부호 규칙 알려줘",
+              "피타고라스 정리가 뭐야?"
+            ].map((prompt, pIdx) => (
+              <button
+                key={pIdx}
+                onClick={() => handleSendMessage(prompt)}
+                className="px-3 py-1 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600 border border-slate-200 rounded-full flex-shrink-0 transition-colors"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
+          {/* Input Form */}
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            className="p-3 bg-white border-t border-slate-200 flex items-center space-x-2"
+          >
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="수학 개념이나 문제를 수빈쌤 AI에게 질문하세요..."
+              className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-indigo-500 rounded-xl text-slate-900 text-xs sm:text-sm outline-none"
+            />
+            <button
+              type="submit"
+              disabled={isChatLoading || !chatInput.trim()}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-1"
+            >
+              <span>전송</span>
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </form>
+        </div>
+      </section>
+
+
+      {/* 5. 게임 (GAME) SECTION */}
       <section id="game" className="container mx-auto px-4 sm:px-6 max-w-4xl space-y-8">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center space-x-2 text-indigo-600 font-bold text-xs uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
