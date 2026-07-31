@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Cpu, ShieldCheck, Activity, Terminal as TerminalIcon } from "lucide-react";
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-});
+import { BookOpen, GraduationCap, PhoneCall, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "수빈쌤의 행복한 수학교실 | MATH_OS v2.0",
-  description: "사이버펑크 해커 스타일의 미래지향적 수학 학습 플랫폼",
+  title: "수빈쌤의 행복한 수학교실 | 1:1 맞춤 수학 전문 학원",
+  description: "개념부터 킬러 문제 정복까지! 수학 1등급을 만드는 수빈쌤의 행복한 수학교실",
 };
 
 export default function RootLayout({
@@ -19,70 +13,91 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="dark">
-      <body
-        className={`${jetbrainsMono.variable} font-mono antialiased bg-black text-green-500 min-h-screen flex flex-col bg-grid-pattern selection:bg-green-500 selection:text-black`}
-      >
-        {/* Top Hacker Nav Bar */}
-        <header className="sticky top-0 z-50 bg-black/90 backdrop-blur-md border-b border-green-500/40 neon-border-green">
-          <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <html lang="ko" className="dark scroll-smooth">
+      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+        {/* Navigation Bar */}
+        <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+          <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center space-x-3 group cursor-pointer">
-              <div className="p-2 bg-green-500/10 rounded border border-green-500/50 group-hover:border-green-400 group-hover:shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all">
-                <TerminalIcon className="w-5 h-5 text-green-400 neon-text-green" />
+            <a href="#" className="flex items-center space-x-3 group">
+              <div className="p-2 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="text-xs text-green-500/70 tracking-widest font-mono">SYS_ID: MATH_SUBIN_01</div>
-                <h1 className="text-base md:text-lg font-bold neon-text-green tracking-wider group-hover:neon-text-magenta transition-all">
-                  &gt; 수빈쌤의_행복한_수학교실
-                </h1>
+                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-widest block">Happy Math Lab</span>
+                <span className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                  수빈쌤의 행복한 수학교실
+                </span>
               </div>
-            </div>
+            </a>
 
-            {/* Status & Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-wider">
-              <a href="#curriculum" className="flex items-center space-x-1.5 text-green-400 hover:neon-text-cyan transition-all">
-                <span>[01_커리큘럼]</span>
-              </a>
-              <a href="#terminal" className="flex items-center space-x-1.5 text-green-400 hover:neon-text-magenta transition-all">
-                <span>[02_해커_터미널]</span>
-              </a>
-              <a href="#stats" className="flex items-center space-x-1.5 text-green-400 hover:neon-text-green transition-all">
-                <span>[03_학습_현황]</span>
-              </a>
+            {/* Menu Links */}
+            <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+              <a href="#about" className="hover:text-indigo-400 transition-colors">수학교실 소개</a>
+              <a href="#courses" className="hover:text-indigo-400 transition-colors">강의 안내</a>
+              <a href="#reviews" className="hover:text-indigo-400 transition-colors">수강후기</a>
+              <a href="#faq" className="hover:text-indigo-400 transition-colors">자주 묻는 질문</a>
             </nav>
 
-            {/* Live System Indicator */}
-            <div className="flex items-center space-x-3 text-xs border border-green-500/40 rounded px-3 py-1.5 bg-black/60">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-green-400 hidden sm:inline">Vercel Edge Active</span>
-              <span className="text-green-500/50">|</span>
-              <span className="neon-text-cyan font-bold">100% ONLINE</span>
+            {/* Header Right Action */}
+            <div className="flex items-center space-x-4">
+              <a
+                href="#contact"
+                className="hidden sm:inline-flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white px-3 py-2"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-indigo-400" />
+                <span>상담 문의</span>
+              </a>
+              <a
+                href="#contact"
+                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md shadow-indigo-600/30 transition-all flex items-center space-x-1.5"
+              >
+                <span>무료 체험 신청</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
             </div>
           </div>
         </header>
 
-        {/* Main Content Container */}
+        {/* Main Content */}
         <main className="flex-grow">
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="border-t border-green-500/30 bg-black/90 py-8 text-xs text-green-500/70 mt-16">
-          <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center space-x-1"><Cpu className="w-4 h-4 text-green-400" /> <span>Core: Next.js App Router</span></span>
-              <span>•</span>
-              <span className="flex items-center space-x-1"><ShieldCheck className="w-4 h-4 text-green-400" /> <span>Security: Encrypted</span></span>
-              <span>•</span>
-              <span className="flex items-center space-x-1"><Activity className="w-4 h-4 text-green-400" /> <span>Latency: 12ms</span></span>
+        <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-12 text-sm">
+          <div className="container mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-3 md:col-span-2">
+              <div className="flex items-center space-x-2 text-white font-bold text-lg">
+                <BookOpen className="w-5 h-5 text-indigo-400" />
+                <span>수빈쌤의 행복한 수학교실</span>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed max-w-md">
+                초등·중등·고등 수학 개념 완성과 수능 1등급 대비를 위한 1:1 맞춤 학습 시스템. 
+                수학이 어려웠던 학생도 원리와 재미를 깨우치도록 수빈쌤이 함께합니다.
+              </p>
             </div>
+
             <div>
-              <p>&copy; {new Date().getFullYear()} 수빈쌤 (Subin Math Lab). All Cybernetic Rights Reserved.</p>
+              <h4 className="text-white font-semibold text-sm mb-3">빠른 링크</h4>
+              <ul className="space-y-2 text-xs">
+                <li><a href="#about" className="hover:text-indigo-400 transition-colors">선생님 소개</a></li>
+                <li><a href="#courses" className="hover:text-indigo-400 transition-colors">수능/내신 커리큘럼</a></li>
+                <li><a href="#reviews" className="hover:text-indigo-400 transition-colors">성적 향상 후기</a></li>
+                <li><a href="#contact" className="hover:text-indigo-400 transition-colors">상담 예약 신청</a></li>
+              </ul>
             </div>
+
+            <div>
+              <h4 className="text-white font-semibold text-sm mb-3">상담 센터</h4>
+              <p className="text-xs text-slate-300 font-semibold mb-1">📞 010-XXXX-XXXX</p>
+              <p className="text-xs text-slate-400">평일 14:00 ~ 22:00 / 토요일 10:00 ~ 18:00</p>
+              <p className="text-xs text-slate-500 mt-2">서울특별시 강남구 수학로 104 행복빌딩 3층</p>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 sm:px-6 mt-8 pt-6 border-t border-slate-800/80 text-center text-xs text-slate-500">
+            &copy; {new Date().getFullYear()} 수빈쌤의 행복한 수학교실. All rights reserved.
           </div>
         </footer>
       </body>

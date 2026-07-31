@@ -3,84 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --background: #050505;
-  --foreground: #22c55e;
+  --background: #0f172a;
+  --foreground: #f8fafc;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-jetbrains-mono), monospace;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   overflow-x: hidden;
 }
 
-/* Matrix Background Grid */
-.bg-grid-pattern {
-  background-size: 30px 30px;
-  background-image: 
-    linear-gradient(to right, rgba(34, 197, 94, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 197, 94, 0.05) 1px, transparent 1px);
+/* Subtle background glow effects */
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
 }
 
-/* Neon Glow Utilities */
-.neon-text-green {
-  color: #22c55e;
-  text-shadow: 0 0 8px rgba(34, 197, 94, 0.8), 0 0 20px rgba(34, 197, 94, 0.4);
+.card-glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.neon-text-magenta {
-  color: #e056fd;
-  text-shadow: 0 0 8px rgba(224, 86, 253, 0.8), 0 0 20px rgba(224, 86, 253, 0.4);
-}
-
-.neon-text-cyan {
-  color: #00f2fe;
-  text-shadow: 0 0 8px rgba(0, 242, 254, 0.8), 0 0 20px rgba(0, 242, 254, 0.4);
-}
-
-.neon-border-green {
-  border: 1px solid rgba(34, 197, 94, 0.6);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3), inset 0 0 12px rgba(34, 197, 94, 0.15);
-}
-
-.neon-border-magenta {
-  border: 1px solid rgba(224, 86, 253, 0.6);
-  box-shadow: 0 0 12px rgba(224, 86, 253, 0.3), inset 0 0 12px rgba(224, 86, 253, 0.15);
-}
-
-.neon-border-cyan {
-  border: 1px solid rgba(0, 242, 254, 0.6);
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3), inset 0 0 12px rgba(0, 242, 254, 0.15);
-}
-
-/* Scanline Effect */
-.scanline {
-  position: relative;
-  overflow: hidden;
-}
-.scanline::after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
-  background-size: 100% 4px;
-  z-index: 10;
-  pointer-events: none;
-  opacity: 0.6;
+.card-glass:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.3);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #000;
+  background: #090d16;
 }
 ::-webkit-scrollbar-thumb {
-  background: #22c55e;
-  border-radius: 3px;
+  background: #4f46e5;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #e056fd;
+  background: #6366f1;
 }

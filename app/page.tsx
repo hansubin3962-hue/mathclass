@@ -2,291 +2,419 @@
 
 import { useState } from "react";
 import { 
-  Terminal, 
-  Code2, 
-  Zap, 
-  Cpu, 
   Sparkles, 
-  CheckCircle2, 
-  ChevronRight, 
-  Play, 
-  BarChart3, 
   BookOpen, 
-  Target, 
-  Layers, 
-  ArrowUpRight 
+  CheckCircle2, 
+  Star, 
+  Award, 
+  TrendingUp, 
+  Users, 
+  Clock, 
+  HelpCircle, 
+  ChevronDown, 
+  ArrowRight,
+  ShieldCheck,
+  Send,
+  Zap
 } from "lucide-react";
 
 export default function Home() {
-  const [terminalInput, setTerminalInput] = useState("");
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    "[SYSTEM_INIT] MATH_OS v2.0 Kernel Loaded.",
-    "[AUTH_CHECK] User access granted. Welcome Student_#4092.",
-    "[STATUS] All 42 Cyber Math Modules online and verified.",
-    "Type 'help' or click quick actions below to execute modules."
-  ]);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const handleCommandSubmit = (cmd?: string) => {
-    const command = (cmd || terminalInput).trim().toLowerCase();
-    if (!command) return;
+  const toggleFaq = (index: number) => {
+    setActiveFaq(activeFaq === index ? null : index);
+  };
 
-    let response = "";
-    if (command === "help") {
-      response = "Available Commands: 'calc' (수식 계산), 'courses' (강의 목록), 'clear' (화면 정돈), 'status' (시스템 현황)";
-    } else if (command === "calc") {
-      response = "[CALC_ENGINE] f(x) = ∫ (3x² + 2x - 5) dx ➔ x³ + x² - 5x + C [Solved in 0.002s]";
-    } else if (command === "courses") {
-      response = "[COURSES] 1. 미적분학 MATRIX | 2. 확률통계 PROTOCOL | 3. 기하학 CYBERSPACE";
-    } else if (command === "status") {
-      response = "[STATUS_REPORT] CPU: 4.2GHz | RAM: 16GB | Math Accuracy Rate: 99.8% | Vercel Deployment: Active";
-    } else if (command === "clear") {
-      setTerminalLogs([]);
-      setTerminalInput("");
-      return;
-    } else {
-      response = `[EXEC_ERROR] Unknown command: '${command}'. Type 'help' for available commands.`;
-    }
-
-    setTerminalLogs(prev => [...prev, `> ${command}`, response]);
-    setTerminalInput("");
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    setTimeout(() => setFormSubmitted(false), 4000);
   };
 
   return (
-    <div className="space-y-24 py-12 px-4 container mx-auto max-w-6xl">
+    <div className="space-y-24 pb-20 bg-radial-gradient">
       
-      {/* HERO SECTION */}
-      <section className="relative flex flex-col items-center text-center space-y-8 pt-8">
-        {/* Glow backdrop */}
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-96 bg-green-500/10 blur-[120px] rounded-full pointer-events-none"></div>
-
-        {/* Hacker Badge */}
-        <div className="inline-flex items-center space-x-2 border border-green-500/50 bg-black/60 rounded-full px-4 py-1.5 text-xs text-green-400 neon-border-green">
-          <Zap className="w-3.5 h-3.5 text-magenta-400 animate-pulse" />
-          <span className="font-semibold tracking-wider uppercase">수학 성적 수직 상승 매트릭스 가동 중</span>
-        </div>
-
-        {/* Hero Title */}
-        <div className="space-y-4 max-w-4xl">
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight neon-text-green uppercase">
-            어서와, <span className="neon-text-magenta">수학교실</span>은 처음이지?
-          </h1>
-          <p className="text-base sm:text-xl text-green-400/80 max-w-2xl mx-auto leading-relaxed">
-            개념부터 실전 모의고사까지, 수빈쌤의 시크릿 해킹 알고리즘으로 수학 1등급을 전송합니다.
-          </p>
-        </div>
-
-        {/* Hero CTA Buttons */}
-        <div className="flex flex-wrap justify-center gap-4 pt-4">
-          <a
-            href="#terminal"
-            className="px-8 py-3.5 bg-green-500 text-black font-bold rounded flex items-center space-x-2 hover:bg-green-400 transition-all shadow-[0_0_20px_rgba(34,197,94,0.6)] uppercase tracking-wider text-sm"
-          >
-            <Play className="w-4 h-4 fill-black" />
-            <span>수학 챌린지 실행 [START]</span>
-          </a>
-          <a
-            href="#curriculum"
-            className="px-8 py-3.5 bg-black border border-green-500/60 text-green-400 font-bold rounded flex items-center space-x-2 hover:neon-border-magenta hover:text-magenta-400 transition-all text-sm uppercase tracking-wider"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>모듈 커리큘럼 탐색</span>
-          </a>
-        </div>
-      </section>
-
-
-      {/* SYSTEM STATS DIAGNOSTIC GRID */}
-      <section id="stats" className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "SUBSCRIBERS", value: "1,337 명", sub: "수강생 성적 향상중", icon: Sparkles, color: "neon-border-green" },
-          { label: "ACCURACY", value: "98.4 %", sub: "킬러문항 정답률", icon: Target, color: "neon-border-cyan" },
-          { label: "MODULES", value: "42 개", sub: "보강 콘텐츠 수량", icon: Layers, color: "neon-border-magenta" },
-          { label: "DEPLOYMENT", value: "100 %", sub: "Vercel 서버 가동률", icon: Cpu, color: "neon-border-green" },
-        ].map((stat, idx) => (
-          <div 
-            key={idx} 
-            className={`p-5 bg-black/70 rounded border ${stat.color} flex flex-col justify-between space-y-3 relative overflow-hidden group hover:scale-[1.02] transition-all`}
-          >
-            <div className="flex items-center justify-between text-xs opacity-70">
-              <span className="font-mono tracking-widest">{stat.label}</span>
-              <stat.icon className="w-4 h-4 text-green-400" />
+      {/* 1. HERO SECTION */}
+      <section className="relative pt-12 md:pt-20 pb-16 px-4 sm:px-6 container mx-auto max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: Headlines & CTA */}
+          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div className="inline-flex items-center space-x-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full px-4 py-1.5 text-xs text-indigo-300 font-medium">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>2026학년도 수능 및 내신 대비 맞춤 클래스 개강</span>
             </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-black neon-text-green font-mono">{stat.value}</div>
-              <div className="text-[11px] text-green-500/70 mt-1">{stat.sub}</div>
-            </div>
-          </div>
-        ))}
-      </section>
 
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
+              수학이 즐거워지는 순간 <br />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400">
+                수빈쌤의 행복한 수학교실
+              </span>
+            </h1>
 
-      {/* INTERACTIVE HACKER MATH TERMINAL */}
-      <section id="terminal" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Terminal className="w-5 h-5 text-green-400 neon-text-green" />
-            <h2 className="text-lg font-bold uppercase tracking-wider neon-text-green">
-              [SYSTEM_TERMINAL] 실시간 콘솔 인터랙션
-            </h2>
-          </div>
-          <span className="text-xs text-green-500/60 font-mono">STATUS: INTERACTIVE</span>
-        </div>
+            <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              막히는 개념 추적부터 킬러 문항 구조 분석까지! 
+              학생 한 명 한 명의 눈높이에 맞춘 1:1 맞춤형 가이드로 수학의 자신감을 완성해 드립니다.
+            </p>
 
-        <div className="border border-green-500/50 rounded-lg bg-black/90 p-5 font-mono text-sm space-y-4 shadow-[0_0_25px_rgba(34,197,94,0.15)] relative scanline">
-          {/* Terminal Controls Header */}
-          <div className="flex items-center justify-between border-b border-green-500/30 pb-3 text-xs opacity-70">
-            <div className="flex space-x-2">
-              <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
-              <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
-              <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
-            </div>
-            <span>bash - math_subin@system:~</span>
-          </div>
-
-          {/* Logs */}
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-            {terminalLogs.map((log, index) => (
-              <div 
-                key={index} 
-                className={`${log.startsWith(">") ? "text-cyan-400 font-bold" : log.includes("ERROR") ? "text-red-400" : "text-green-400/90"}`}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <a
+                href="#contact"
+                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 text-base"
               >
-                {log}
+                <span>무료 진단 컨설팅 신청</span>
+                <ArrowRight className="w-5 h-5" />
+              </a>
+              <a
+                href="#courses"
+                className="w-full sm:w-auto px-8 py-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold rounded-xl transition-all text-center text-base"
+              >
+                강의 커리큘럼 보기
+              </a>
+            </div>
+
+            {/* Quick Benefits */}
+            <div className="pt-6 border-t border-slate-800/80 grid grid-cols-3 gap-4 text-center lg:text-left">
+              <div>
+                <div className="text-2xl font-bold text-white">99.4%</div>
+                <div className="text-xs text-slate-400 mt-0.5">수강생 만족도</div>
               </div>
-            ))}
+              <div>
+                <div className="text-2xl font-bold text-indigo-400">1,300+</div>
+                <div className="text-xs text-slate-400 mt-0.5">누적 성적 향상 수강생</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-400">+24점</div>
+                <div className="text-xs text-slate-400 mt-0.5">평균 성적 상승폭</div>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-green-500/20 text-xs">
-            <span className="text-green-500/60 self-center">빠른 명령어:</span>
-            {["help", "calc", "courses", "status", "clear"].map((cmd) => (
-              <button
-                key={cmd}
-                onClick={() => handleCommandSubmit(cmd)}
-                className="px-2.5 py-1 bg-green-500/10 border border-green-500/40 rounded hover:bg-green-500/30 text-green-300 transition-all"
-              >
-                ${cmd}
-              </button>
-            ))}
+          {/* Right Column: Interactive Card Display */}
+          <div className="lg:col-span-5 relative">
+            <div className="relative z-10 p-6 sm:p-8 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 shadow-2xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold">
+                    수빈
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-sm">수빈쌤의 약속</h3>
+                    <p className="text-xs text-slate-400">1:1 밀착 관리 케어 시스템</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-500/20">
+                  신규 수강생 모집중
+                </span>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                {[
+                  "개념을 원리부터 취약점까지 정밀 분석",
+                  "매주 진행되는 1:1 오답 클리닉 리포트",
+                  "학교별 최신 내신 기출 & 수능 킬러 분석",
+                  "실시간 Q&A 피드백 케어"
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-start space-x-3 text-slate-300">
+                    <CheckCircle2 className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-slate-800 bg-indigo-950/40 p-4 rounded-xl border border-indigo-500/20">
+                <div className="flex items-center justify-between text-xs text-indigo-300 font-semibold mb-1">
+                  <span>🎯 이번 달 수강 신청 현황</span>
+                  <span>85% 마감</span>
+                </div>
+                <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div className="bg-gradient-to-r from-indigo-500 to-pink-500 h-full w-[85%]"></div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Input Form */}
-          <form 
-            onSubmit={(e) => { e.preventDefault(); handleCommandSubmit(); }} 
-            className="flex items-center space-x-2 pt-2"
-          >
-            <span className="text-magenta-400 font-bold">&gt;</span>
-            <input
-              type="text"
-              value={terminalInput}
-              onChange={(e) => setTerminalInput(e.target.value)}
-              placeholder="명령어를 입력하세요 (예: help, calc)..."
-              className="flex-1 bg-transparent border-none outline-none text-green-300 placeholder-green-700/60 text-sm"
-            />
-            <button 
-              type="submit"
-              className="px-4 py-1 bg-green-500 text-black font-bold text-xs rounded hover:bg-green-400 transition-all"
-            >
-              EXECUTE
-            </button>
-          </form>
         </div>
       </section>
 
-
-      {/* CURRICULUM MODULES GRID */}
-      <section id="curriculum" className="space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-widest neon-text-magenta">
-            [CURRICULUM_MODULES] 수빈쌤 코어 파이프라인
-          </h2>
-          <p className="text-xs sm:text-sm text-green-500/70">
-            수학적 지능을 최고 단계로 업그레이드하는 최적화 모듈입니다.
+      {/* 2. WHY SUBIN MATH CLASS (특장점) */}
+      <section id="about" className="px-4 sm:px-6 container mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Why Choose Us</span>
+          <h2 className="text-3xl font-extrabold text-white">왜 수빈쌤의 수학교실일까요?</h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            단순 암기식 풀이가 아닌 수학적 사고력을 키워주는 차별화된 수학 학습 패러다임을 제안합니다.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {
-              code: "MOD_01",
-              title: "미적분학 MATRIX",
-              desc: "함수와 극한의 경계를 허무는 인공지능형 개념 정리 및 킬러 문항 정복",
-              tags: ["수열의 극한", "미분법", "적분법"],
-              color: "neon-border-green",
-              tagColor: "bg-green-500/10 text-green-400 border-green-500/30"
+              icon: Award,
+              title: "1:1 정밀 약점 진단",
+              desc: "학생마다 다른 약점을 데이터 기반으로 정밀 분석하여 맞춤 복습 보충 과제를 제공합니다."
             },
             {
-              code: "MOD_02",
-              title: "확률과 통계 PROTOCOL",
-              desc: "불확실성을 완전히 통제하는 알고리즘 문제풀이 및 빈출 유형 완전 정복",
-              tags: ["순열과 조합", "확률", "통계적 추정"],
-              color: "neon-border-magenta",
-              tagColor: "bg-magenta-500/10 text-magenta-400 border-magenta-500/30"
+              icon: TrendingUp,
+              title: "성적 상향 도달 시스템",
+              desc: "기초 개념 체계화부터 시작하여 3단계 계단식 오답 클리닉으로 상위권 진입을 완성합니다."
             },
             {
-              code: "MOD_03",
-              title: "기하학 CYBERSPACE",
-              desc: "3차원 공간 도형과 벡터의 직관적 해석을 위한 시각화 훈련 파이프라인",
-              tags: ["이차곡선", "평면벡터", "공간도형"],
-              color: "neon-border-cyan",
-              tagColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
-            },
-            {
-              code: "MOD_04",
-              title: "실전 모의고사 OVERDRIVE",
-              desc: "수능 및 내신 완벽 대비 타임어택 시뮬레이션 및 실시간 정답 분석 모듈",
-              tags: ["타임어택", "오답노트", "1등급 컷 분석"],
-              color: "neon-border-green",
-              tagColor: "bg-green-500/10 text-green-400 border-green-500/30"
+              icon: ShieldCheck,
+              title: "철저한 밀착 서포트",
+              desc: "수업 시간 외에도 24시간 1:1 질의응답 피드백으로 궁금한 문제를 즉시 해결해 드립니다."
             }
-          ].map((item, idx) => (
-            <div 
-              key={idx} 
-              className={`p-6 bg-black/80 rounded-lg border ${item.color} flex flex-col justify-between space-y-4 hover:shadow-[0_0_20px_rgba(34,197,94,0.2)] transition-all group`}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-mono text-green-500/60">
-                  <span>{item.code}</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover:text-magenta-400 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+          ].map((feature, idx) => (
+            <div key={idx} className="card-glass p-8 rounded-2xl space-y-4 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <feature.icon className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white">{feature.title}</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. COURSES & CURRICULUM (강의 안내) */}
+      <section id="courses" className="px-4 sm:px-6 container mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Curriculum</span>
+          <h2 className="text-3xl font-extrabold text-white">수학 성적 상승 대표 과정</h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            목표 점수와 학년에 따른 전문 수강 커리큘럼 라인업입니다.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              title: "미적분 개념 & 킬러 마스터",
+              badge: "고3 / N수 전문",
+              desc: "수열의 극한부터 미분법, 적분법까지 킬러 문항 구조 파악 및 풀이 시간 단축 특강",
+              duration: "주 2회 (회당 3시간)",
+              tag: "수능 필수"
+            },
+            {
+              title: "확률과 통계 완벽 정리",
+              badge: "고2 / 고3",
+              desc: "빈출 유형 패턴화 학습과 실전 모의고사로 만점을 목표로 하는 스피드 완강 반",
+              duration: "주 2회 (회당 2.5시간)",
+              tag: "내신/수능"
+            },
+            {
+              title: "기하 공간도형 & 벡터 시각화",
+              badge: "고2 / 고3",
+              desc: "어려운 공간도형과 평면벡터를 직관적으로 이해하고 확실하게 답을 도출하는 훈련",
+              duration: "주 1회 (회당 3시간)",
+              tag: "개념 완성"
+            },
+            {
+              title: "공통수학 I & II 기틀 완성",
+              badge: "고1 / 예비고",
+              desc: "고등 수학의 탄탄한 기본기를 쌓고 내신 상위권 등급 유지를 위한 맞춤형 집중반",
+              duration: "주 2회 (회당 3시간)",
+              tag: "내신 집중"
+            },
+            {
+              title: "중등 수학 심화 & 고등 연계",
+              badge: "중2 / 중3",
+              desc: "중등 과정의 완벽한 이수와 고등학교 수학 진학을 위한 선행 다지기 과정",
+              duration: "주 2회 (회당 2시간)",
+              tag: "심화 선행"
+            },
+            {
+              title: "1:1 파이널 타임어택 모의고사",
+              badge: "전 학년",
+              desc: "시험 직전 최신 기출 변형 문제 기반 실전 심리 훈련 및 개인별 약점 보완 특강",
+              duration: "시험 직전 단기 특강",
+              tag: "실전 대비"
+            }
+          ].map((course, idx) => (
+            <div key={idx} className="card-glass p-6 rounded-2xl flex flex-col justify-between space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs font-semibold rounded-full">
+                    {course.badge}
+                  </span>
+                  <span className="text-xs text-purple-400 font-semibold">{course.tag}</span>
                 </div>
-                <h3 className="text-xl font-bold text-green-400 group-hover:neon-text-green transition-all">
-                  {item.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-green-300/70 leading-relaxed">
-                  {item.desc}
-                </p>
+                <h3 className="text-xl font-bold text-white">{course.title}</h3>
+                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">{course.desc}</p>
               </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                {item.tags.map((tag, i) => (
-                  <span key={i} className={`text-[11px] px-2.5 py-1 rounded border font-mono ${item.tagColor}`}>
-                    #{tag}
-                  </span>
-                ))}
+              <div className="pt-4 border-t border-slate-800 space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span className="flex items-center space-x-1.5"><Clock className="w-3.5 h-3.5 text-indigo-400" /> <span>수업 시간</span></span>
+                  <span className="text-slate-200 font-medium">{course.duration}</span>
+                </div>
+                <a
+                  href="#contact"
+                  className="w-full py-2.5 bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white text-xs font-semibold rounded-lg transition-all text-center block"
+                >
+                  수강 문의하기
+                </a>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* FINAL CALL TO ACTION */}
-      <section className="p-8 sm:p-12 border border-green-500/60 rounded-xl bg-black/90 text-center space-y-6 relative overflow-hidden neon-border-green">
-        <div className="space-y-3 relative z-10">
-          <h2 className="text-2xl sm:text-4xl font-extrabold uppercase neon-text-green tracking-wider">
-            준비되었는가? 수학 1등급 메인프레임 접속
-          </h2>
-          <p className="text-xs sm:text-base text-green-400/80 max-w-xl mx-auto">
-            지금 수빈쌤의 수학교실에 등록하고 나만의 학습 파이프라인을 구축하세요.
+      {/* 4. STUDENT REVIEWS (수강 후기) */}
+      <section id="reviews" className="px-4 sm:px-6 container mx-auto max-w-6xl space-y-12">
+        <div className="text-center space-y-3">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Testimonials</span>
+          <h2 className="text-3xl font-extrabold text-white">생생한 수강생 성적 향상 후기</h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            수빈쌤과 함께 수학의 재미를 찾고 원하던 성적을 거둔 실제 학생들의 이야기입니다.
           </p>
         </div>
 
-        <div className="flex justify-center pt-2 relative z-10">
-          <button 
-            onClick={() => alert("수빈쌤의 수학교실 모듈 등록 신청이 승인되었습니다!")}
-            className="px-10 py-4 bg-green-500 text-black font-black rounded-md hover:bg-green-400 transition-all shadow-[0_0_30px_rgba(34,197,94,0.8)] uppercase tracking-widest text-sm flex items-center space-x-2 group"
-          >
-            <span>[REGISTER] 무료 수강 신청하기</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              name: "김OO 학생",
+              tag: "수능 수학 4등급 ➔ 1등급 달성",
+              text: "항상 수학 시간이 두려웠는데 수빈쌤께서 개념의 원리부터 쉽게 풀어 설명해 주셔서 킬러 문제도 겁 없이 풀 수 있게 되었습니다!"
+            },
+            {
+              name: "박OO 학생",
+              tag: "내신 수학 72점 ➔ 98점 상승",
+              text: "매주 주어지는 1:1 오답 리포트 덕분에 제가 반복해서 틀리던 습관을 정확히 고칠 수 있었습니다. 수빈쌤 정말 감사합니다!"
+            },
+            {
+              name: "이OO 학생",
+              tag: "모의고사 100점 만점 수강생",
+              text: "문제 접근 방식을 다각도로 보여주셔서 어떤 생소한 문제가 나와도 당황하지 않고 원리를 떠올려 해결할 수 있었습니다."
+            }
+          ].map((review, idx) => (
+            <div key={idx} className="card-glass p-6 rounded-2xl space-y-4">
+              <div className="flex items-center space-x-1 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400" />
+                ))}
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed italic">"{review.text}"</p>
+              <div className="pt-4 border-t border-slate-800/80">
+                <div className="font-bold text-white text-sm">{review.name}</div>
+                <div className="text-xs text-indigo-400 font-semibold mt-0.5">{review.tag}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. FAQ SECTION (자주 묻는 질문) */}
+      <section id="faq" className="px-4 sm:px-6 container mx-auto max-w-4xl space-y-8">
+        <div className="text-center space-y-3">
+          <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">FAQ</span>
+          <h2 className="text-3xl font-extrabold text-white">자주 묻는 질문</h2>
+        </div>
+
+        <div className="space-y-4">
+          {[
+            {
+              q: "수학 기초가 많이 부족한 학생도 수강할 수 있나요?",
+              a: "네, 물론입니다! 수빈쌤의 수학교실은 학생의 현재 진단 테스트 결과를 바탕으로 기초 개념 복습부터 차근차근 레벨업하는 1:1 맞춤형 가이드를 제공합니다."
+            },
+            {
+              q: "수업 방식은 어떻게 진행되나요?",
+              a: "핵심 개념 원리 강의 후 개별 문제 풀이 지도 및 1:1 클리닉 케어로 진행되며, 매주 개인별 오답 노트와 성취도 리포트가 함께 제공됩니다."
+            },
+            {
+              q: "상담 및 무료 체험 수업은 어떻게 신청하나요?",
+              a: "아래 상담 신청 폼에 이름과 연락처를 남겨주시면 24시간 이내에 진단 상담 및 무료 체험 수업 일정을 안내해 드립니다."
+            }
+          ].map((item, idx) => (
+            <div key={idx} className="card-glass rounded-xl overflow-hidden transition-all">
+              <button
+                onClick={() => toggleFaq(idx)}
+                className="w-full p-5 text-left flex items-center justify-between text-white font-semibold text-base"
+              >
+                <span className="flex items-center space-x-3">
+                  <HelpCircle className="w-5 h-5 text-indigo-400 flex-shrink-0" />
+                  <span>{item.q}</span>
+                </span>
+                <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${activeFaq === idx ? "rotate-180" : ""}`} />
+              </button>
+              {activeFaq === idx && (
+                <div className="px-5 pb-5 pt-1 text-slate-300 text-sm leading-relaxed border-t border-slate-800/60">
+                  {item.a}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. CONTACT FORM SECTION (상담 및 무료 체험 신청) */}
+      <section id="contact" className="px-4 sm:px-6 container mx-auto max-w-4xl">
+        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 shadow-2xl space-y-8 relative overflow-hidden">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">무료 상담 & 체험 수업 신청</h2>
+            <p className="text-slate-300 text-sm max-w-md mx-auto">
+              학생의 수학 고민을 나누어 주세요. 수빈쌤이 명쾌한 솔루션을 찾아드립니다.
+            </p>
+          </div>
+
+          {formSubmitted ? (
+            <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-2">
+              <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+              <h3 className="text-lg font-bold text-white">상담 신청이 완료되었습니다!</h3>
+              <p className="text-xs text-slate-300">입력하신 연락처로 빠른 시일 내에 연락드리겠습니다.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleFormSubmit} className="space-y-4 max-w-lg mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">학생 이름</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="홍길동"
+                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-indigo-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">학년</label>
+                  <select className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-indigo-500 text-sm">
+                    <option>고등학교 3학년 / N수</option>
+                    <option>고등학교 2학년</option>
+                    <option>고등학교 1학년</option>
+                    <option>중학교 과정</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">연락처</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="010-1234-5678"
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-indigo-500 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">상담 내용 및 문의 사항</label>
+                <textarea
+                  rows={3}
+                  placeholder="현재 취약한 과목이나 고민을 간단히 남겨주세요."
+                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-indigo-500 text-sm resize-none"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center space-x-2 text-base"
+              >
+                <Send className="w-4 h-4" />
+                <span>무료 상담 신청 완료하기</span>
+              </button>
+            </form>
+          )}
         </div>
       </section>
 
