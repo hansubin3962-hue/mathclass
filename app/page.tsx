@@ -442,8 +442,12 @@ export default function Home() {
 
         <div className="card-light p-8 rounded-2xl grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
           <div className="md:col-span-4 flex flex-col items-center text-center space-y-4">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-extrabold shadow-lg shadow-indigo-500/30 border-4 border-white">
-              수빈
+            <div className="relative w-36 h-36 rounded-full overflow-hidden shadow-xl shadow-indigo-500/25 border-4 border-white group">
+              <img 
+                src="/teacher_subin.png" 
+                alt="한수빈 선생님 프로필" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-900">한수빈 선생님</h3>
